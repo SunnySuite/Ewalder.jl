@@ -1,0 +1,1852 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Ewald summation in practice
+\end_layout
+
+\begin_layout Author
+Kipton Barros
+\end_layout
+
+\begin_layout Section
+Problem statement
+\end_layout
+
+\begin_layout Standard
+The Coulomb energy of 
+\begin_inset Formula $N$
+\end_inset
+
+ charges 
+\begin_inset Formula $q_{1},\dots q_{N}$
+\end_inset
+
+ at positions 
+\begin_inset Formula $\mathbf{r}_{1},\dots\mathbf{r}_{N}$
+\end_inset
+
+ is
+\begin_inset Formula 
+\begin{equation}
+E=\frac{1}{4\pi\epsilon_{0}}\frac{1}{2}\sideset{}{^{\prime}}\sum_{i,j}\frac{q_{i}q_{j}}{|\mathbf{r}_{ij}|},\label{eq:E}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\mathbf{r}_{ij}=\mathbf{r}_{j}-\mathbf{r}_{i}$
+\end_inset
+
+ and 
+\begin_inset Formula $\epsilon_{0}$
+\end_inset
+
+ is the vacuum permittivity.
+ The factor of 1/2 counteracts double counting over ion pairs, 
+\begin_inset Formula $i$
+\end_inset
+
+ and 
+\begin_inset Formula $j$
+\end_inset
+
+.
+ The prime notation in 
+\begin_inset Formula $\sum'$
+\end_inset
+
+ indicates that infinite self interactions, where 
+\begin_inset Formula $i=j$
+\end_inset
+
+, are to be excluded from the sum.
+\end_layout
+
+\begin_layout Standard
+Now consider a finite size system with periodic boundary conditions.
+ The system volume can be any parallelpiped, but for simplicity let us here
+ assume a cubic system with linear size 
+\begin_inset Formula $L$
+\end_inset
+
+.
+ Equation
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ generalizes to a sum over all pairs of atoms, 
+\emph on
+including
+\emph default
+ all periodic images of the system 
+\begin_inset Formula $(\mathbf{n}\in\mathbb{Z}^{3})$
+\end_inset
+
+.
+ The energy of one system image is formally written,
+\begin_inset Formula 
+\begin{equation}
+E=\frac{1}{4\pi\epsilon_{0}}\sum_{\mathbf{n}}\frac{1}{2}\sideset{}{^{\prime}}\sum_{i,j}\frac{q_{i}q_{j}}{|\mathbf{r}_{ij}+\mathbf{n}L|}\quad\textrm{(p.b.c.)}.\label{eq:E_pbc}
+\end{equation}
+
+\end_inset
+
+It is necessary to enforce charge neutrality, 
+\begin_inset Formula 
+\begin{equation}
+Q=\sum_{i}q_{i}=0,
+\end{equation}
+
+\end_inset
+
+to avoid a strong divergence in the sum over images 
+\begin_inset Formula $\mathbf{n}$
+\end_inset
+
+.
+ If the net dipole moment,
+\begin_inset Formula 
+\begin{equation}
+\mathbf{P}=\sum_{i}\mathbf{r}_{i}q_{i},
+\end{equation}
+
+\end_inset
+
+is nonzero, then the sum in Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_pbc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ is still only conditionally convergent.
+ To understand this intuitively, consider that two system images, separated
+ by a large distance 
+\begin_inset Formula $r=|\mathbf{n}L|$
+\end_inset
+
+, effectively interact via their net dipoles.
+ Dipole-dipole interactions decay like 
+\begin_inset Formula $r^{-3}$
+\end_inset
+
+.
+ At large distances 
+\begin_inset Formula $r$
+\end_inset
+
+, the sum over 
+\begin_inset Formula $\mathbf{n}\in\mathbb{Z}^{3}$
+\end_inset
+
+ can effectively be approximated as an integral, 
+\begin_inset Formula $\sum_{\mathbf{n}}(\cdot)\rightarrow\int_{\mathbb{R}^{3}}(\cdot)r^{2}d\mathbf{r}$
+\end_inset
+
+.
+ If we naïvely insert cubic decay for dipole-dipole interactions, 
+\begin_inset Formula $(\cdot)\rightarrow r^{-3}$
+\end_inset
+
+, it appears that there is logarithmic divergence.
+ A more careful analysis should include also the angular dependence of dipole-di
+pole interactions; in this case, Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_pbc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ can converge, but the result depends on the order of summation over 
+\begin_inset Formula $\mathbf{n}$
+\end_inset
+
+.
+ Any real material sample will have finite volume, and the conditional convergen
+ce highlights the importance of surface boundary effects, e.g., the geometry
+ of the finite sample.
+\end_layout
+
+\begin_layout Standard
+Ewald summation is a way to regularize the infinite sum of Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_pbc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and give it a particular meaning.
+ Its derivation involves a series of formal manipulations.
+\end_layout
+
+\begin_layout Section
+Preliminaries
+\end_layout
+
+\begin_layout Standard
+To set the stage, first consider the case of a single point charge 
+\begin_inset Formula $q$
+\end_inset
+
+ at the origin.
+ In continuum language, this is a Dirac-
+\begin_inset Formula $\delta$
+\end_inset
+
+ charge distribution,
+\begin_inset Formula 
+\begin{equation}
+\rho(\mathbf{r})=q\delta(\mathbf{r}).
+\end{equation}
+
+\end_inset
+
+The Ewald method will effectively decompose this distribution as,
+\begin_inset Formula 
+\begin{align*}
+\rho(\mathbf{r}) & =\rho^{L}(\mathbf{r})+\rho^{S}(\mathbf{r})\\
+ & =qG(\mathbf{r})+[\rho(\mathbf{r})-qG(\mathbf{r})].
+\end{align*}
+
+\end_inset
+
+The first term 
+\begin_inset Formula $\rho^{L}(\mathbf{r})$
+\end_inset
+
+ is a Gaussian smoothing of the original point-charge, where
+\begin_inset Formula 
+\begin{equation}
+G(\mathbf{r})=\frac{1}{\sigma^{3}(2\pi)^{3/2}}\exp\left[-r^{2}/2\sigma^{2}\right],\label{eq:G}
+\end{equation}
+
+\end_inset
+
+and 
+\begin_inset Formula $r=|\mathbf{r}|$
+\end_inset
+
+.
+ The length scale 
+\begin_inset Formula $\sigma$
+\end_inset
+
+ is a tuneable parameter, and will eventually be adjusted to optimize numerical
+ efficiency.
+\end_layout
+
+\begin_layout Standard
+The smoothed charge distribution 
+\begin_inset Formula $\rho^{L}(\mathbf{r})$
+\end_inset
+
+ is useful because it produces an accurate electrostatic potential at 
+\emph on
+long
+\emph default
+ ranges.
+ In general, the potential 
+\begin_inset Formula $\varphi(\mathbf{r})$
+\end_inset
+
+ associated with an arbitrary charge density 
+\begin_inset Formula $\rho(\mathbf{r})$
+\end_inset
+
+ is defined to satisfy, 
+\begin_inset Formula 
+\begin{equation}
+\epsilon_{0}\nabla^{2}\varphi(\mathbf{r})=-\rho(\mathbf{r}),\label{eq:psi_poisson}
+\end{equation}
+
+\end_inset
+
+or equivalently,
+\begin_inset Formula 
+\begin{equation}
+\varphi(\mathbf{r})=\frac{1}{4\pi\epsilon_{0}}\int\frac{\rho(\mathbf{r}')}{|\mathbf{r}'-\mathbf{r}|}d\mathbf{r}'.\label{eq:psi}
+\end{equation}
+
+\end_inset
+
+For a point charge, 
+\begin_inset Formula $\rho(\mathbf{r})\rightarrow q\delta(\mathbf{r})$
+\end_inset
+
+, the solution is
+\begin_inset Formula 
+\begin{equation}
+\varphi(\mathbf{r})=\frac{q}{4\pi\epsilon_{0}r}.
+\end{equation}
+
+\end_inset
+
+For the Gaussian cloud, 
+\begin_inset Formula $\rho(\mathbf{r})\rightarrow qG(\mathbf{r})$
+\end_inset
+
+, the solution is instead,
+\begin_inset Formula 
+\begin{equation}
+\varphi^{L}(\mathbf{r})=\frac{q}{4\pi\epsilon_{0}r}\mathrm{erf}\left(\frac{r}{\sqrt{2}\,\sigma}\right).\label{eq:psiL}
+\end{equation}
+
+\end_inset
+
+The error function 
+\begin_inset Formula $\mathrm{erf(x)}$
+\end_inset
+
+ converges to 1 very rapidly when 
+\begin_inset Formula $x\gg1$
+\end_inset
+
+; this confirms that 
+\begin_inset Formula $\varphi^{L}(\mathbf{r})$
+\end_inset
+
+ rapidly converges to 
+\begin_inset Formula $\varphi(\mathbf{r})$
+\end_inset
+
+ at long range.
+ The deviations are only significant at 
+\emph on
+short
+\emph default
+ range,
+\begin_inset Formula 
+\begin{equation}
+\varphi^{S}(\mathbf{r})=\frac{q}{4\pi\epsilon_{0}r}\mathrm{erfc}\left(\frac{r}{\sqrt{2}\,\sigma}\right),
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\mathrm{erfc(x)=1-erf(x)}$
+\end_inset
+
+.
+ By construction, 
+\begin_inset Formula 
+\begin{equation}
+\varphi(\mathbf{r})=\varphi^{L}(\mathbf{r})+\varphi^{S}(\mathbf{r}),\label{eq:phi0_decomp}
+\end{equation}
+
+\end_inset
+
+exactly.
+\end_layout
+
+\begin_layout Standard
+Note that the potential for a Gaussian charge cloud is smooth everywhere,
+ including the origin.
+ Using 
+\begin_inset Formula 
+\begin{equation}
+\lim_{x\rightarrow0}\mathrm{erf}(x)=2x/\sqrt{\pi},
+\end{equation}
+
+\end_inset
+
+one finds, 
+\begin_inset Formula 
+\begin{equation}
+\lim_{|\mathbf{r}|\rightarrow0}\varphi^{L}(\mathbf{r})=\frac{q}{4\pi\epsilon_{0}}\sqrt{\frac{2}{\pi}}\frac{1}{\sigma}.\label{eq:self_pot}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Energy decomposition
+\end_layout
+
+\begin_layout Standard
+Now we return to the full periodic Coulomb energy of Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_pbc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Upon rearranging terms, it can be written
+\begin_inset Formula 
+\begin{equation}
+E=\frac{1}{2}\sum_{i}q_{i}\phi_{i}',\label{eq:E_phi}
+\end{equation}
+
+\end_inset
+
+where
+\begin_inset Formula 
+\begin{equation}
+\phi_{i}'=\frac{1}{4\pi\epsilon_{0}}\sideset{}{^{\prime}}\sum_{j,\mathbf{n}}\frac{q_{j}}{|\mathbf{r}_{ij}+\mathbf{n}L|},
+\end{equation}
+
+\end_inset
+
+is a formal sum (only conditionally convergent) giving the electrostatic
+ potential at 
+\begin_inset Formula $\mathbf{r}_{i}$
+\end_inset
+
+, as generated by all ions 
+\begin_inset Formula $j$
+\end_inset
+
+ and their 
+\begin_inset Formula $\mathbf{n}$
+\end_inset
+
+th periodic images.
+ As before, the prime in 
+\begin_inset Formula $\sum'$
+\end_inset
+
+ indicates that we are excluding the infinite self-potential when 
+\begin_inset Formula $j=i$
+\end_inset
+
+ and 
+\begin_inset Formula $\mathbf{n}=(0,0,0)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+In analogy with Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:phi0_decomp"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, one may decompose 
+\begin_inset Formula $\phi'_{i}$
+\end_inset
+
+ into long and short range parts.
+ For convenience, we will also add and subtract the electrostatic potential
+ for the center of the 
+\begin_inset Formula $i$
+\end_inset
+
+th Gaussian charge cloud, Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:self_pot"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The final decomposition to be used by Ewald is,
+\begin_inset Formula 
+\begin{equation}
+\phi_{i}'=\phi_{i}^{L}+\phi_{i}^{\prime S}-\frac{q_{i}}{4\pi\epsilon_{0}}\sqrt{\frac{2}{\pi}}\frac{1}{\sigma},\label{eq:phi_decomp}
+\end{equation}
+
+\end_inset
+
+where
+\begin_inset Formula 
+\begin{align}
+\phi_{i}^{L} & =\frac{1}{4\pi\epsilon_{0}}\sum_{j,\mathbf{n}}\frac{q_{j}}{r_{ij\mathbf{n}}}\mathrm{erf}\left(\frac{r_{ij\mathbf{n}}}{\sqrt{2}\,\sigma}\right)\label{eq:phi_i_L}\\
+\phi_{i}^{\prime S} & =\frac{1}{4\pi\epsilon_{0}}\sideset{}{^{\prime}}\sum_{j,\mathbf{n}}\frac{q_{j}}{r_{ij\mathbf{n}}}\mathrm{erfc}\left(\frac{r_{ij\mathbf{n}}}{\sqrt{2}\,\sigma}\right),
+\end{align}
+
+\end_inset
+
+and for convenience,
+\begin_inset Formula 
+\begin{equation}
+r_{ij\mathbf{n}}=|\mathbf{r}_{j}+\mathbf{n}L-\mathbf{r}_{i}|.
+\end{equation}
+
+\end_inset
+
+The prime in 
+\begin_inset Formula $\phi_{i}^{\prime S}$
+\end_inset
+
+ is a reminder that the divergent term involving 
+\begin_inset Formula $r_{ij\mathbf{n}}=0$
+\end_inset
+
+ is excluded from the sum.
+ Note, however, that the definition of 
+\begin_inset Formula $\phi_{i}^{L}$
+\end_inset
+
+ involves an unrestricted sum, 
+\emph on
+including
+\emph default
+ the case where 
+\begin_inset Formula $r_{ij\mathbf{n}}=0$
+\end_inset
+
+.
+ This self-contribution to 
+\begin_inset Formula $\phi_{i}^{L}$
+\end_inset
+
+ is canceled by the final term in Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:phi_decomp"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Substituting Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:phi_decomp"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ into Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_pbc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ yields the desired decomposition of energy,
+\begin_inset Formula 
+\begin{equation}
+E=E_{L}+E_{S}-E_{\mathrm{self}},\label{eq:E_total}
+\end{equation}
+
+\end_inset
+
+with
+\begin_inset Formula 
+\begin{align}
+E_{L} & =\frac{1}{2}\sum_{i,\mathbf{n}}q_{i}\phi_{i}^{L}\label{eq:EL_phi}\\
+E_{S} & =\frac{1}{4\pi\epsilon_{0}}\frac{1}{2}\sideset{}{^{\prime}}\sum_{i,j,\mathbf{n}}\frac{q_{i}q_{j}}{r_{ij\mathbf{n}}}\mathrm{erfc}\left(\frac{r_{ij\mathbf{n}}}{\sqrt{2}\,\sigma}\right)\\
+E_{\mathrm{self}} & =\frac{1}{4\pi\epsilon_{0}}\frac{1}{\sqrt{2\pi}\,\sigma}\sum_{i}q_{i}^{2}.
+\end{align}
+
+\end_inset
+
+The term 
+\begin_inset Formula $E_{S}$
+\end_inset
+
+ involves real-space sum over pair-interactions that decay rapidly with
+ distance 
+\begin_inset Formula $r_{ij\mathbf{n}}$
+\end_inset
+
+.
+ The term 
+\begin_inset Formula $E_{L}$
+\end_inset
+
+ captures the long-range part of Coulomb interactions, to be discussed in
+ the next section.
+\end_layout
+
+\begin_layout Subsection
+Fourier space treatment of long-range interactions
+\end_layout
+
+\begin_layout Standard
+The steps so far have involved only rearrangements of the energy contributions.
+ It remains now to give precise meaning to the long-range Coulomb interactions
+ 
+\begin_inset Formula $E_{L}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The electrostatic potential 
+\begin_inset Formula $\phi_{i}^{L}=\phi^{L}(\mathbf{r}_{i})$
+\end_inset
+
+ involves a sum over periodic images, Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:phi_i_L"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, which is only conditionally convergent.
+ The solution Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:psiL"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ to
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:psi_poisson"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ suggests an alternative starting point: we can 
+\emph on
+define
+\emph default
+ the long-range potential 
+\begin_inset Formula $\phi^{L}(\mathbf{r})$
+\end_inset
+
+ as a solution to the Poisson equation,
+\begin_inset Formula 
+\begin{equation}
+\epsilon_{0}\nabla^{2}\phi^{L}(\mathbf{r})=-\sum_{j,\mathbf{n}}q_{j}G(\mathbf{r}_{j}+\mathbf{n}L-\mathbf{r}),\label{eq:poisson_phi_L}
+\end{equation}
+
+\end_inset
+
+subject to periodic boundary conditions.
+ The right-hand side is a convolution, 
+\begin_inset Formula 
+\begin{equation}
+\epsilon_{0}\nabla^{2}\phi^{L}(\mathbf{r})=-\rho(\mathbf{r})\ast G(\mathbf{r}),\label{eq:phi_L_poisson}
+\end{equation}
+
+\end_inset
+
+involving the charge density field for all ion images,
+\begin_inset Formula 
+\begin{equation}
+\rho(\mathbf{r})=\sum_{j,\mathbf{n}}q_{j}\delta(\mathbf{r}-\mathbf{r}_{j}+\mathbf{n}L),
+\end{equation}
+
+\end_inset
+
+and the Gaussian kernel defined in Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:G"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Taking the Fourier transform of both sides of Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:poisson_phi_L"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and using the convolution theorem, one finds
+\begin_inset Formula 
+\begin{equation}
+\hat{\phi}^{L}(\mathbf{k})=\frac{1}{\epsilon_{0}k^{2}}\hat{\rho}(\mathbf{k})\hat{G}(\mathbf{k}).
+\end{equation}
+
+\end_inset
+
+The Fourier transform of charge density is
+\begin_inset Formula 
+\begin{equation}
+\hat{\rho}(\mathbf{k})=\int e^{-i\mathbf{k}\cdot\mathbf{r}}\rho(\mathbf{r})d\mathbf{r}=\sum_{j}e^{-i\mathbf{k}\cdot\mathbf{r}_{j}}q_{j}.
+\end{equation}
+
+\end_inset
+
+The Fourier transform of the Gaussian kernel is another Gaussian,
+\begin_inset Formula 
+\begin{equation}
+\hat{G}(\mathbf{k})=e^{-\sigma^{2}k^{2}/2}.
+\end{equation}
+
+\end_inset
+
+Parseval's theorem states that the long-range energy can be expressed as
+ a integral over either real space or Fourier space,
+\begin_inset Formula 
+\begin{equation}
+E_{L}=\frac{1}{2}\int\rho(\mathbf{r})\phi^{L}(\mathbf{r})d\mathbf{r}=\frac{1}{2V}\sum_{\mathbf{k}\neq\mathbf{0}}\hat{\rho}(-\mathbf{k})\hat{\phi}^{L}(\mathbf{k}),\label{eq:E_L_rho_phi}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $V=L^{3}$
+\end_inset
+
+ is the system volume.
+ The sum on the right is over all wave vectors with appropriate periodicity,
+ i.e.
+ 
+\begin_inset Formula $k_{\alpha}=2\pi n_{\alpha}/L$
+\end_inset
+
+ for integer 
+\begin_inset Formula $n_{\alpha}$
+\end_inset
+
+.
+ Charge neutrality implies 
+\begin_inset Formula $\hat{\rho}(\mathbf{0})=\sum_{j}q_{i}=0$
+\end_inset
+
+, and it is reasonable to also impose 
+\begin_inset Formula $\hat{\phi}^{L}(\mathbf{0})=\sum_{i}\phi(\mathbf{r}_{i})=0$
+\end_inset
+
+ on the solution of Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:poisson_phi_L"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ This choice justifies excluding 
+\begin_inset Formula $\mathbf{k}=\mathbf{0}$
+\end_inset
+
+ from the Fourier space sums.
+\end_layout
+
+\begin_layout Standard
+Collecting results,
+\begin_inset Formula 
+\begin{equation}
+E_{L}=\frac{1}{2V\epsilon_{0}}\sum_{\mathbf{k}\neq\mathbf{0}}\frac{e^{-\sigma^{2}k^{2}/2}}{k^{2}}\left|\hat{\rho}(\mathbf{k})\right|^{2}.
+\end{equation}
+
+\end_inset
+
+Note that 
+\begin_inset Formula $\hat{\rho}(-\mathbf{k})=\hat{\rho}(\mathbf{k})^{\ast}$
+\end_inset
+
+ because the charge density 
+\begin_inset Formula $\rho(\mathbf{r})$
+\end_inset
+
+ is real.
+\end_layout
+
+\begin_layout Section
+A numerical method
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+The total Ewald energy of Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_total"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ may be calculated as a sum of real space contributions,
+\begin_inset Formula 
+\begin{align}
+E_{S} & =\frac{1}{4\pi\epsilon_{0}}\frac{1}{2}\sideset{}{^{\prime}}\sum_{i,j,\mathbf{n}}\frac{q_{i}q_{j}}{r_{ij\mathbf{n}}}\mathrm{erfc}\left(\frac{r_{ij\mathbf{n}}}{\sqrt{2}\,\sigma}\right),\label{eq:E_S_again}
+\end{align}
+
+\end_inset
+
+and Fourier space contributions,
+\begin_inset Formula 
+\begin{equation}
+E_{L}=\frac{1}{2V\epsilon_{0}}\sum_{\mathbf{k}\neq\mathbf{0}}\frac{e^{-\sigma^{2}k^{2}/2}}{k^{2}}\left|\hat{\rho}(\mathbf{k})\right|^{2},\label{eq:E_L_again}
+\end{equation}
+
+\end_inset
+
+involving the Fourier transform of charge density,
+\begin_inset Formula 
+\begin{equation}
+\hat{\rho}(\mathbf{k})=\sum_{i}q_{i}e^{-i\mathbf{k}\cdot\mathbf{r}_{i}}.\label{eq:rho_k_again}
+\end{equation}
+
+\end_inset
+
+Finally, one must subtract the self-energy,
+\begin_inset Formula 
+\begin{equation}
+E_{\mathrm{self}}=\frac{1}{4\pi\epsilon_{0}}\frac{1}{\sqrt{2\pi}\,\sigma}\sum_{i}q_{i}^{2}.
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Below, we will discuss how to impose cutoffs on these sums, and how to select
+ an optimal length scale 
+\begin_inset Formula $\sigma$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Although these formulas have been derived in the context of a cubic volume,
+ they continue to hold for a parallelpiped volume spanned by arbitrary lattice
+ vectors 
+\begin_inset Formula $\mathbf{a}_{1},\mathbf{a}_{2},\mathbf{a}_{3}$
+\end_inset
+
+.
+ In this generalized context, pairwise displacements are
+\begin_inset Formula 
+\begin{equation}
+\mathbf{r}_{ij\mathbf{n}}=\mathbf{r}_{j}-\mathbf{r}_{i}+\sum_{\alpha}n_{\alpha}\mathbf{a}_{\alpha}.\label{eq:rijn}
+\end{equation}
+
+\end_inset
+
+The system volume is 
+\begin_inset Formula $V=|\mathbf{a}_{1}\cdot(\mathbf{a}_{2}\times\mathbf{a}_{3})|$
+\end_inset
+
+.
+ The associated reciprocal lattice vectors 
+\begin_inset Formula $\mathbf{b}_{1},\mathbf{b}_{2},\mathbf{b}_{3}$
+\end_inset
+
+ are defined to satisfy
+\begin_inset Formula 
+\begin{equation}
+\mathbf{a}_{\alpha}\cdot\mathbf{b}_{\beta}=2\pi\delta_{\alpha\beta}.
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In real space, the charge density is periodic 
+\begin_inset Formula $\rho(\mathbf{r}_{ij\mathbf{n}})=\rho(\mathbf{r}_{ij\mathbf{0}})$
+\end_inset
+
+ for arbitrary cell indices 
+\begin_inset Formula $n_{1},n_{2},n_{3}$
+\end_inset
+
+.
+ Consequently, the 
+\begin_inset Formula $\mathbf{k}$
+\end_inset
+
+ vectors contributing to 
+\begin_inset Formula $\hat{\rho}(\mathbf{k})$
+\end_inset
+
+ must be integer multiples of 
+\begin_inset Formula $\mathbf{b}_{\alpha}$
+\end_inset
+
+,
+\begin_inset Formula 
+\begin{equation}
+\mathbf{k}_{\mathbf{m}}=\sum_{\beta}m_{\beta}\mathbf{b}_{\beta}.\label{eq:k_m}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In a numerical implementation, we will truncate the sums of 
+\begin_inset Formula $E^{S}$
+\end_inset
+
+ and 
+\begin_inset Formula $E^{L}$
+\end_inset
+
+ by imposing upper bounds to the summation
+\begin_inset Formula 
+\begin{align}
+r_{ij\mathbf{n}}/\sqrt{2}\sigma & \leq c_{0}\label{eq:r_cut}\\
+\sigma k_{\mathbf{m}}/\sqrt{2} & \leq c_{0}.\label{eq:k_cut}
+\end{align}
+
+\end_inset
+
+Convergence of the sums will be exponentially fast in the cutoff squared,
+ 
+\begin_inset Formula $c_{0}^{2}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+It remains to select the parameter 
+\begin_inset Formula $\sigma$
+\end_inset
+
+ that optimizes numerical efficiency.
+ Let 
+\begin_inset Formula $N$
+\end_inset
+
+ denote the number of ions in a system with fixed ion density 
+\begin_inset Formula $\rho_{\mathrm{ion}}=N/V$
+\end_inset
+
+.
+ Calculating 
+\begin_inset Formula $E_{S}$
+\end_inset
+
+ requires iterating over all 
+\begin_inset Formula $N$
+\end_inset
+
+ ions; each ion interacts with order 
+\begin_inset Formula $\rho_{\mathrm{ion}}r_{\mathrm{cut}}^{3}$
+\end_inset
+
+ neighbors, where 
+\begin_inset Formula $r_{\mathrm{cut}}\sim c_{0}\sigma$
+\end_inset
+
+.
+ At large 
+\begin_inset Formula $N$
+\end_inset
+
+, the total cost of this real space summation is
+\begin_inset Formula 
+\begin{equation}
+\mathcal{C}_{S}\cong\chi_{S}N\sigma^{3},
+\end{equation}
+
+\end_inset
+
+with some prefactor 
+\begin_inset Formula $\chi_{S}\propto\rho_{\mathrm{ion}}c_{0}^{3}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Calculating 
+\begin_inset Formula $E_{L}$
+\end_inset
+
+ requires summing over a discrete set of Fourier modes, Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:k_m"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, up to a maximum of 
+\begin_inset Formula $k_{\mathrm{cut}}\sim m_{\mathrm{cut}}/L\sim c_{0}/\sigma$
+\end_inset
+
+.
+ The maximum cutoff index scales as 
+\begin_inset Formula $m_{\mathrm{cut}}\sim cL/\sigma$
+\end_inset
+
+, and the total number of modes scales as 
+\begin_inset Formula $m_{\mathrm{cut}}^{3}\sim c_{0}^{3}V/\sigma$
+\end_inset
+
+.
+ For each mode 
+\begin_inset Formula $\mathbf{k}$
+\end_inset
+
+, one must calculate 
+\begin_inset Formula $\hat{\rho}(\mathbf{k})$
+\end_inset
+
+ in Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rho_k_again"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ by summing over all 
+\begin_inset Formula $N$
+\end_inset
+
+ ions.
+ The asymptotic cost of this Fourier space summation is
+\begin_inset Formula 
+\begin{equation}
+\mathcal{C}_{L}\cong\chi_{L}N^{2}/\sigma^{3},
+\end{equation}
+
+\end_inset
+
+with some prefactor 
+\begin_inset Formula $\chi_{L}\propto\rho_{\mathrm{ion}}^{-1}c_{0}^{3}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The length 
+\begin_inset Formula $\sigma$
+\end_inset
+
+ that minimizes the total cost 
+\begin_inset Formula $\mathcal{C}_{S}+\mathcal{C}_{L}$
+\end_inset
+
+ satisfies 
+\begin_inset Formula 
+\begin{equation}
+\sigma^{3}=\sqrt{N\frac{\chi_{L}}{\chi_{S}}},
+\end{equation}
+
+\end_inset
+
+With this choice, the cost is equally weighted between real and Fourier
+ space, 
+\begin_inset Formula $\mathcal{C}_{S}=\mathcal{C}_{L}=N^{3/2}\sqrt{\chi_{L}\chi_{S}}$
+\end_inset
+
+, and we observe the scaling,
+\begin_inset Formula 
+\begin{equation}
+\mathcal{C}_{S}+\mathcal{C}_{L}\propto N^{3/2}.
+\end{equation}
+
+\end_inset
+
+Reinserting the dependence ion density, (
+\begin_inset Formula $\chi_{S}\propto\rho_{\mathrm{ion}}$
+\end_inset
+
+ and 
+\begin_inset Formula $\chi_{L}\propto\rho_{\mathrm{ion}}^{-1}$
+\end_inset
+
+), one finds
+\begin_inset Formula 
+\begin{equation}
+\sigma=\frac{L}{c_{1}N^{1/6}},
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $L\propto V^{1/3}$
+\end_inset
+
+.
+ The constant 
+\begin_inset Formula $c_{1}$
+\end_inset
+
+ should be selected according to implementation details, specifically the
+ relative costs of real and Fourier space summation.
+\end_layout
+
+\begin_layout Standard
+To summarize, the Ewald method is controlled by two dimensionless parameters:
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $c_{0}\approx4$
+\end_inset
+
+ (maybe), which controls accuracy.
+ The error decays exponentially in 
+\begin_inset Formula $c_{0}^{2}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $c_{1}\approx2$
+\end_inset
+
+ (maybe); larger values make 
+\begin_inset Formula $\sigma$
+\end_inset
+
+ smaller, and shift more work to the Fourier space sum.
+ 
+\emph on
+To select 
+\begin_inset Formula $c_{1}$
+\end_inset
+
+ optimally, one must equally balance real and Fourier space costs.
+\end_layout
+
+\begin_layout Section
+Inclusion of dipoles
+\end_layout
+
+\begin_layout Subsection
+Review: from charges to dipoles
+\end_layout
+
+\begin_layout Standard
+To understand dipole interactions, one can start with the electrostatic
+ potential of two charges 
+\begin_inset Formula $q_{i}$
+\end_inset
+
+ and 
+\begin_inset Formula $q_{j}$
+\end_inset
+
+,
+\begin_inset Formula 
+\begin{equation}
+E_{\mathrm{cc}}=\frac{q_{i}q_{j}}{4\pi\epsilon_{0}}\frac{1}{r_{ij}},
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $r_{ij}=|\mathbf{r}_{j}-\mathbf{r}_{i}|$
+\end_inset
+
+.
+ A point dipole 
+\begin_inset Formula $\mathbf{p}_{j}$
+\end_inset
+
+ can be modeled as two competing charges 
+\begin_inset Formula $q_{j}=\pm1/\varepsilon$
+\end_inset
+
+, displaced by 
+\begin_inset Formula $\pm\varepsilon\mathbf{p}_{j}$
+\end_inset
+
+, for 
+\begin_inset Formula $\varepsilon\rightarrow0$
+\end_inset
+
+.
+ The charge-dipole interaction energy is therefore 
+\begin_inset Formula 
+\begin{align}
+E_{\mathrm{cd}} & =\frac{q_{i}}{4\pi\epsilon_{0}}\lim_{\varepsilon\rightarrow0}\frac{1}{\varepsilon}\left(\frac{1}{|(\mathbf{r}_{j}+\epsilon\mathbf{p}_{j})-\mathbf{r}_{i}|}-\frac{1}{|\mathbf{r}_{j}-\mathbf{r}_{i})|}\right).
+\end{align}
+
+\end_inset
+
+This is a directional derivative,
+\begin_inset Formula 
+\begin{equation}
+E_{\mathrm{cd}}=\frac{q_{i}(-\mathbf{p}_{j}\cdot\nabla_{j})}{4\pi\epsilon_{0}}\frac{1}{r_{ij}}=\frac{q_{i}}{4\pi\epsilon_{0}}\frac{\mathbf{p}_{j}\cdot\hat{\mathbf{r}}_{ij}}{r_{ij}^{2}},
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\nabla_{j}$
+\end_inset
+
+ denotes the gradient with respect to 
+\begin_inset Formula $\mathbf{r}_{j}$
+\end_inset
+
+.
+ Now consider a system of two dipoles, 
+\begin_inset Formula $\mathbf{p}_{i}$
+\end_inset
+
+ and 
+\begin_inset Formula $\mathbf{p}_{j}$
+\end_inset
+
+.
+ Iterating the same perturbation procedure on the charge 
+\begin_inset Formula $q_{i}=\pm1/\epsilon$
+\end_inset
+
+, the resulting energy is,
+\begin_inset Formula 
+\begin{align}
+E_{\mathrm{dd}} & =\frac{(-\mathbf{p}_{i}\cdot\nabla_{i})(-\mathbf{p}_{j}\cdot\nabla_{j})}{4\pi\epsilon_{0}}\frac{1}{r_{ij}}\nonumber \\
+ & =\frac{1}{4\pi\epsilon_{0}}\left[\frac{\mathbf{p}_{i}\cdot\mathbf{p}_{j}-3(\mathbf{p}_{j}\cdot\hat{\mathbf{r}}_{ij})(\mathbf{p}_{i}\cdot\hat{\mathbf{r}}_{ij})}{r_{ij}^{3}}\right]+\cancel{\delta(\mathbf{r}_{ij})\frac{\mathbf{p}_{i}\cdot\mathbf{p}_{j}}{3\epsilon_{0}}}.
+\end{align}
+
+\end_inset
+
+The first term is recognized as the usual dipole-dipole energy.
+ The second term disappears when 
+\begin_inset Formula $\mathbf{r}_{i}\neq\mathbf{r}_{j}$
+\end_inset
+
+, as we will assume.
+\end_layout
+
+\begin_layout Standard
+The general procedure to introduce a point dipole 
+\begin_inset Formula $\mathbf{p}_{i}$
+\end_inset
+
+ along with every charge 
+\begin_inset Formula $q_{i}$
+\end_inset
+
+ is to substitute
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+q_{i}\rightarrow q_{i}-\mathbf{p}_{i}\cdot\nabla_{i},\label{eq:subs}
+\end{equation}
+
+\end_inset
+
+into the energy formula, e.g.
+ Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_pbc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ This procedure continues to work for the Ewald energy of Eqs.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_S_again"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+–
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rho_k_again"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Short range part
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+Following this substitution procedure, the local interactions of Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_S_again"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ become
+\begin_inset Formula 
+\begin{align}
+E_{S} & =\frac{1}{4\pi\epsilon_{0}}\frac{1}{2}\sideset{}{^{\prime}}\sum_{i,j,\mathbf{n}}(q_{i}+\mathbf{p}_{i}\cdot\nabla_{j})(q_{j}-\mathbf{p}_{j}\cdot\nabla_{j})\frac{\mathrm{erfc}\left(\frac{r_{ij\mathbf{n}}}{\sqrt{2}\,\sigma}\right)}{r_{ij\mathbf{n}}}\nonumber \\
+ & =\frac{1}{4\pi\epsilon_{0}}\frac{1}{2}\sideset{}{^{\prime}}\sum_{i,j,\mathbf{n}}\biggl[q_{i}q_{j}\mathcal{E}_{\mathrm{cc}}(\mathbf{r}_{ij\mathbf{n}})\label{eq:E_S_dipole}\\
+ & \quad\quad\quad\quad\quad\quad\quad\quad+(q_{i}\mathbf{p}_{j}-\mathbf{p}_{i}q_{j})\cdot\overrightarrow{\mathcal{E}}_{\mathrm{cd}}(\mathbf{r}_{ij\mathbf{n}})\nonumber \\
+ & \quad\quad\quad\quad\quad\quad\quad\quad+(\mathbf{p}_{i}\otimes\mathbf{p}_{j}):\overleftrightarrow{\mathcal{E}}_{\mathrm{dd}}(\mathbf{r}_{ij\mathbf{n}})\biggr].\nonumber 
+\end{align}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We have used 
+\begin_inset Formula $\nabla_{i}=-\nabla_{j}$
+\end_inset
+
+, which follows from the definition in Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rho_k_again"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Charge-charge interaction scalar is as before,
+\begin_inset Formula 
+\begin{equation}
+\mathcal{E}_{\mathrm{cc}}(\mathbf{r})=\frac{\mathrm{erfc}\left(\frac{r}{\sqrt{2}\,\sigma}\right)}{r}.
+\end{equation}
+
+\end_inset
+
+Charge-dipole interaction vector is
+\begin_inset Formula 
+\begin{align}
+\overrightarrow{\mathcal{E}}_{\mathrm{cd}}(\mathbf{r}) & =-\nabla\frac{\mathrm{erfc}\left(\frac{r}{\sqrt{2}\,\sigma}\right)}{r}\nonumber \\
+ & =\frac{\hat{\mathbf{r}}}{r^{2}}\left[\mathrm{erfc}\left(\frac{r}{\sqrt{2}\,\sigma}\right)+\sqrt{\frac{2}{\pi}}\frac{r}{\sigma}e^{-r^{2}/2\sigma^{2}}\right]
+\end{align}
+
+\end_inset
+
+Finally, dipole-dipole interaction tensor is
+\begin_inset Formula 
+\begin{align}
+\overleftrightarrow{\mathcal{E}}_{\mathrm{dd}}(\mathbf{r}) & =-\nabla\otimes\nabla\frac{\mathrm{erfc}\left(\frac{r}{\sqrt{2}\,\sigma}\right)}{r}.\nonumber \\
+ & =\frac{I}{r^{3}}\left(\mathrm{erfc}\left(\frac{r}{\sqrt{2}\,\sigma}\right)+\sqrt{\frac{2}{\pi}}\frac{r}{\sigma}e^{-r^{2}/2\sigma^{2}}\right)\label{eq:calE_dd}\\
+ & \quad-\frac{3\hat{\mathbf{r}}\otimes\hat{\mathbf{r}}}{r^{3}}\left[\mathrm{erfc}\left(\frac{r}{\sqrt{2}\,\sigma}\right)+\left(1+\frac{r^{2}}{3\sigma^{2}}\right)\sqrt{\frac{2}{\pi}}\frac{r}{\sigma}e^{-r^{2}/2\sigma^{2}}\right],\nonumber 
+\end{align}
+
+\end_inset
+
+where 
+\begin_inset Formula $I$
+\end_inset
+
+ is the identity tensor.
+\end_layout
+
+\begin_layout Subsection
+Long range part
+\end_layout
+
+\begin_layout Standard
+The long range interactions of Eqs.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_L_again"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ involve the Fourier transform of the Dirac charge distribution, Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:rho_k_again"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Upon applying the substitution of Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:subs"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, one gets
+\begin_inset Formula 
+\begin{equation}
+\hat{\rho}(\mathbf{k})\rightarrow\hat{\rho}_{\mathrm{eff}}(\mathbf{k})=\sum_{j}(q_{j}-\mathbf{p}_{j}\cdot\nabla_{j})e^{-i\mathbf{k}\cdot\mathbf{r}_{j}}.
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+The long-range energy remains a sum in Fourier space, 
+\begin_inset Formula 
+\begin{equation}
+E_{L}=\frac{1}{2V\epsilon_{0}}\sum_{\mathbf{k}\neq\mathbf{0}}\frac{e^{-\sigma^{2}k^{2}/2}}{k^{2}}|\hat{\rho}'(\mathbf{k})|^{2},
+\end{equation}
+
+\end_inset
+
+but now involving both charges and dipoles,
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{equation}
+\hat{\rho}_{\mathrm{eff}}(\mathbf{k})=\sum_{j}(q_{j}+i\mathbf{p}_{j}\cdot\mathbf{k})e^{-i\mathbf{k}\cdot\mathbf{r}_{j}}.
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Self-energy
+\end_layout
+
+\begin_layout Standard
+The above procedure introduces an unphysical dipole self-interaction in
+ Fourier space.
+ To correct for this, the self-energy must include an additional term,
+\begin_inset Formula 
+\begin{equation}
+E_{\mathrm{self}}=\frac{1}{4\pi\epsilon_{0}}\left(\frac{1}{\sqrt{2\pi}\,\sigma}\sum_{i}q_{i}^{2}+\frac{1}{3}\frac{1}{\sqrt{2\pi}\,\sigma^{3}}\sum_{i}p_{i}^{2}\right).
+\end{equation}
+
+\end_inset
+
+
+\color red
+TODO: DERIVE THIS.
+ A modern reference is 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+https://doi.org/10.1063/1.481216
+\end_layout
+
+\end_inset
+
+.
+ Rappaport book also includes this term, and its references go back to de
+ Leeuw, e.g.
+ Proc.
+ Roy.
+ Soc.
+ Lond.
+ A 373, 57-66 (1980).
+\end_layout
+
+\begin_layout Section
+Effective pair interactions
+\end_layout
+
+\begin_layout Standard
+In the context of simulating model lattice systems, Ewald can be used to
+ precompute the effective interaction between two sites, accounting for
+ all periodic images.
+ The long-range energy expands to
+\begin_inset Formula 
+\begin{equation}
+E_{L}=\frac{1}{2V\epsilon_{0}}\sum_{\mathbf{k}\neq\mathbf{0}}\frac{e^{-\sigma^{2}k^{2}/2}}{k^{2}}\sum_{ij}(q_{i}-i\mathbf{p}_{i}\cdot\mathbf{k})(q_{j}+i\mathbf{p}_{j}\cdot\mathbf{k})e^{-i\mathbf{k}\cdot\mathbf{r}_{ij}}.
+\end{equation}
+
+\end_inset
+
+The short-range part 
+\begin_inset Formula $E_{S}$
+\end_inset
+
+ is given in Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_S_dipole"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Consider, for simplicity, an ordered pair of dipoles
+\series bold
+ 
+\begin_inset Formula $\mathbf{p}_{i}$
+\end_inset
+
+
+\series default
+ and 
+\begin_inset Formula $\mathbf{p}_{j}$
+\end_inset
+
+ with 
+\begin_inset Formula $i\neq j$
+\end_inset
+
+.
+ The energy for this periodic, pairwise interaction is
+\begin_inset Formula 
+\begin{equation}
+E_{ij}=\frac{1}{4\pi\epsilon_{0}}\mathbf{p}_{i}\cdot\left[\frac{4\pi}{2V}\sum_{\mathbf{k}\neq\mathbf{0}}\frac{e^{-\sigma^{2}k^{2}/2}}{k^{2}}(\mathbf{k}\otimes\mathbf{k})e^{-i\mathbf{k}\cdot\mathbf{r}_{ij}}+\sum_{\mathbf{n}}\overleftrightarrow{\mathcal{E}}_{\mathrm{dd}}(\mathbf{r}_{ij\mathbf{n}})\right]\cdot\mathbf{p}_{j},
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $\overleftrightarrow{\mathcal{E}}_{\mathrm{dd}}$
+\end_inset
+
+ was defined in Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:calE_dd"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ A factor of two is required to account for contributions from both 
+\begin_inset Formula $E_{ij}$
+\end_inset
+
+ and 
+\begin_inset Formula $E_{ji}$
+\end_inset
+
+.
+ Similar formulas hold for charge-charge and charge-dipole interactions.
+\end_layout
+
+\end_body
+\end_document
