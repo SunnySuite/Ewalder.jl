@@ -117,7 +117,7 @@ where
 \end_inset
 
  is the vacuum permittivity.
- The factor of 1/2 counteracts double counting over ion pairs, 
+ The factor of 1/2 undoes double counting over ion pairs, 
 \begin_inset Formula $i$
 \end_inset
 
@@ -232,7 +232,7 @@ noprefix "false"
 \end_inset
 
  can effectively be approximated as an integral, 
-\begin_inset Formula $\sum_{\mathbf{n}}(\cdot)\rightarrow\int_{\mathbb{R}^{3}}(\cdot)r^{2}d\mathbf{r}$
+\begin_inset Formula $\sum_{\mathbf{n}}(\cdot)\rightarrow\int_{\mathbb{R}^{3}}(\cdot)r^{2}dr$
 \end_inset
 
 .
@@ -262,8 +262,8 @@ noprefix "false"
 
 .
  Any real material sample will have finite volume, and the conditional convergen
-ce highlights the importance of surface boundary effects, e.g., the geometry
- of the finite sample.
+ce highlights the importance of surface effects, such as the geometry of
+ the finite sample.
 \end_layout
 
 \begin_layout Standard
@@ -337,8 +337,7 @@ and
 \begin_inset Formula $\sigma$
 \end_inset
 
- is a tuneable parameter, and will eventually be adjusted to optimize numerical
- efficiency.
+ is a tuneable parameter that can be adjusted to optimize numerical efficiency.
 \end_layout
 
 \begin_layout Standard
@@ -681,7 +680,7 @@ with
 \begin{align}
 E_{L} & =\frac{1}{2}\sum_{i,\mathbf{n}}q_{i}\phi_{i}^{L}\label{eq:EL_phi}\\
 E_{S} & =\frac{1}{4\pi\epsilon_{0}}\frac{1}{2}\sideset{}{^{\prime}}\sum_{i,j,\mathbf{n}}\frac{q_{i}q_{j}}{r_{ij\mathbf{n}}}\mathrm{erfc}\left(\frac{r_{ij\mathbf{n}}}{\sqrt{2}\,\sigma}\right)\\
-E_{\mathrm{self}} & =\frac{1}{4\pi\epsilon_{0}}\frac{1}{\sqrt{2\pi}\,\sigma}\sum_{i}q_{i}^{2}.
+E_{\mathrm{self}} & =\frac{1}{4\pi\epsilon_{0}}\frac{1}{\sqrt{2\pi}\,\sigma}\sum_{i}q_{i}^{2}.\label{eq:E_self_0}
 \end{align}
 
 \end_inset
@@ -869,11 +868,11 @@ where
  The sum on the right is over all wave vectors with appropriate periodicity,
  i.e.
  
-\begin_inset Formula $k_{\alpha}=2\pi n_{\alpha}/L$
+\begin_inset Formula $k_{\alpha}=2\pi m_{\alpha}/L$
 \end_inset
 
  for integer 
-\begin_inset Formula $n_{\alpha}$
+\begin_inset Formula $m_{\alpha}$
 \end_inset
 
 .
@@ -881,30 +880,15 @@ where
 \begin_inset Formula $\hat{\rho}(\mathbf{0})=\sum_{j}q_{i}=0$
 \end_inset
 
-, and it is reasonable to also impose 
-\begin_inset Formula $\hat{\phi}^{L}(\mathbf{0})=\sum_{i}\phi(\mathbf{r}_{i})=0$
-\end_inset
-
- on the solution of Eq.
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset ref
-LatexCommand eqref
-reference "eq:poisson_phi_L"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
-.
- This choice justifies excluding 
+, which allows to exclude 
 \begin_inset Formula $\mathbf{k}=\mathbf{0}$
 \end_inset
 
- from the Fourier space sums.
+ from the Fourier space sums, provided the reasonable assumption that 
+\begin_inset Formula $\hat{\phi}^{L}(\mathbf{0})=\sum_{i}\phi(\mathbf{r}_{i})$
+\end_inset
+
+ is finite.
 \end_layout
 
 \begin_layout Standard
@@ -992,7 +976,7 @@ involving the Fourier transform of charge density,
 Finally, one must subtract the self-energy,
 \begin_inset Formula 
 \begin{equation}
-E_{\mathrm{self}}=\frac{1}{4\pi\epsilon_{0}}\frac{1}{\sqrt{2\pi}\,\sigma}\sum_{i}q_{i}^{2}.
+E_{\mathrm{self}}=\frac{1}{4\pi\epsilon_{0}}\frac{1}{\sqrt{2\pi}\,\sigma}\sum_{i}q_{i}^{2}.\label{eq:E_self_again}
 \end{equation}
 
 \end_inset
@@ -1419,17 +1403,17 @@ where
 \begin_inset Formula 
 \begin{align}
 E_{\mathrm{dd}} & =\frac{(-\mathbf{p}_{i}\cdot\nabla_{i})(-\mathbf{p}_{j}\cdot\nabla_{j})}{4\pi\epsilon_{0}}\frac{1}{r_{ij}}\nonumber \\
- & =\frac{1}{4\pi\epsilon_{0}}\left[\frac{\mathbf{p}_{i}\cdot\mathbf{p}_{j}-3(\mathbf{p}_{j}\cdot\hat{\mathbf{r}}_{ij})(\mathbf{p}_{i}\cdot\hat{\mathbf{r}}_{ij})}{r_{ij}^{3}}\right]+\cancel{\delta(\mathbf{r}_{ij})\frac{\mathbf{p}_{i}\cdot\mathbf{p}_{j}}{3\epsilon_{0}}}.
+ & =\frac{1}{4\pi\epsilon_{0}}\left[\frac{\mathbf{p}_{i}\cdot\mathbf{p}_{j}-3(\mathbf{p}_{j}\cdot\hat{\mathbf{r}}_{ij})(\mathbf{p}_{i}\cdot\hat{\mathbf{r}}_{ij})}{r_{ij}^{3}}\right]+\cancel{\delta(\mathbf{r}_{ij})\frac{\mathbf{p}_{i}\cdot\mathbf{p}_{j}}{3\epsilon_{0}}}.\label{eq:E_dd}
 \end{align}
 
 \end_inset
 
 The first term is recognized as the usual dipole-dipole energy.
- The second term disappears when 
+ The second term can be ignored because we will always take 
 \begin_inset Formula $\mathbf{r}_{i}\neq\mathbf{r}_{j}$
 \end_inset
 
-, as we will assume.
+.
 \end_layout
 
 \begin_layout Standard
@@ -1485,7 +1469,7 @@ noprefix "false"
 –
 \begin_inset CommandInset ref
 LatexCommand eqref
-reference "eq:rho_k_again"
+reference "eq:E_self_again"
 plural "false"
 caps "false"
 noprefix "false"
@@ -1628,7 +1612,7 @@ noprefix "false"
 
 \end_inset
 
- involve the Fourier transform of the Dirac charge distribution, Eq.
+ involve the Fourier transform of the charge density, Eq.
 \begin_inset space ~
 \end_inset
 
@@ -1720,9 +1704,135 @@ Self-energy
 \end_layout
 
 \begin_layout Standard
-The above procedure introduces an unphysical dipole self-interaction in
- Fourier space.
- To correct for this, the self-energy must include an additional term,
+Recall that the Gaussian charge cloud self interactions 
+\begin_inset Formula $E_{\mathrm{self}}$
+\end_inset
+
+ were added to the long-range energy 
+\begin_inset Formula $E_{L}$
+\end_inset
+
+ and then subtracted.
+ The original form
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+E_{\mathrm{self}} & =\frac{1}{4\pi\epsilon_{0}}\frac{1}{2}\sum_{i,j}\delta_{ij}q_{i}q_{j}\frac{1}{r_{ij\mathbf{0}}}\mathrm{erf}\left(\frac{r_{ij\mathbf{0}}}{\sqrt{2}\,\sigma}\right),
+\end{align*}
+
+\end_inset
+
+simplifies to Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_self_0"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ When introducing dipoles, the substitution procedure of Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:subs"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ must be applied to 
+\begin_inset Formula $E_{\mathrm{self}}$
+\end_inset
+
+ just as it was to 
+\begin_inset Formula $E_{\mathrm{L}}$
+\end_inset
+
+.
+ The result is
+\begin_inset Formula 
+\begin{align}
+E_{\mathrm{self}} & =\frac{1}{4\pi\epsilon_{0}}\frac{1}{2}\sum_{i,j}\delta_{ij}\biggl[q_{i}q_{j}\frac{1}{r}\mathrm{erf}\left(\frac{r}{\sqrt{2}\,\sigma}\right)\nonumber \\
+ & \quad+(q_{i}\mathbf{p}_{j}-q_{j}\mathbf{p}_{i})\cdot\nabla\frac{1}{r}\mathrm{erf}\left(\frac{r}{\sqrt{2}\,\sigma}\right)\nonumber \\
+ & \quad-(\mathbf{p}_{i}\cdot\nabla)(\mathbf{p}_{j}\cdot\nabla)\frac{1}{r}\mathrm{erf}\left(\frac{r}{\sqrt{2}\,\sigma}\right)\biggr],
+\end{align}
+
+\end_inset
+
+to be evaluated in the limit 
+\begin_inset Formula $r\rightarrow0$
+\end_inset
+
+ where 
+\begin_inset Formula $r=r_{ij}$
+\end_inset
+
+ and 
+\begin_inset Formula $\nabla r=\nabla_{j}r_{ij}=-\nabla_{i}r_{ij}$
+\end_inset
+
+.
+ The first term reproduces Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_self_0"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The second term is zero by symmetry.
+ The third term can be evaluated using the identities,
+\begin_inset Formula 
+\begin{align}
+\frac{1}{r}\mathrm{erf}\left(\frac{r}{\sqrt{2}\,\sigma}\right) & =\sqrt{\frac{2}{\pi}}\,\sigma-\frac{r^{2}}{3\sqrt{2\pi}\,\sigma^{3}}+\mathcal{O}(r^{4}),\\
+\frac{1}{2}(\mathbf{p}_{i}\cdot\nabla)(\mathbf{p}_{i}\cdot\nabla)r^{2} & =p_{i}^{2}.
+\end{align}
+
+\end_inset
+
+The final result is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
 \begin_inset Formula 
 \begin{equation}
 E_{\mathrm{self}}=\frac{1}{4\pi\epsilon_{0}}\left(\frac{1}{\sqrt{2\pi}\,\sigma}\sum_{i}q_{i}^{2}+\frac{1}{3}\frac{1}{\sqrt{2\pi}\,\sigma^{3}}\sum_{i}p_{i}^{2}\right).
@@ -1731,34 +1841,19 @@ E_{\mathrm{self}}=\frac{1}{4\pi\epsilon_{0}}\left(\frac{1}{\sqrt{2\pi}\,\sigma}\
 \end_inset
 
 
-\color red
-TODO: DERIVE THIS.
- A modern reference is 
-\begin_inset Flex URL
-status open
-
-\begin_layout Plain Layout
-
-https://doi.org/10.1063/1.481216
 \end_layout
 
 \end_inset
 
-.
- Rappaport book also includes this term, and its references go back to de
- Leeuw, e.g.
- Proc.
- Roy.
- Soc.
- Lond.
- A 373, 57-66 (1980).
-\end_layout
+
+\begin_inset Note Comment
+status open
 
 \begin_layout Section
 Effective pair interactions
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 In the context of simulating model lattice systems, Ewald can be used to
  precompute the effective interaction between two sites, accounting for
  all periodic images.
@@ -1791,7 +1886,7 @@ noprefix "false"
 .
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 Consider, for simplicity, an ordered pair of dipoles
 \series bold
  
@@ -1804,15 +1899,11 @@ Consider, for simplicity, an ordered pair of dipoles
 \begin_inset Formula $\mathbf{p}_{j}$
 \end_inset
 
- with 
-\begin_inset Formula $i\neq j$
-\end_inset
-
 .
  The energy for this periodic, pairwise interaction is
 \begin_inset Formula 
 \begin{equation}
-E_{ij}=\frac{1}{4\pi\epsilon_{0}}\mathbf{p}_{i}\cdot\left[\frac{4\pi}{2V}\sum_{\mathbf{k}\neq\mathbf{0}}\frac{e^{-\sigma^{2}k^{2}/2}}{k^{2}}(\mathbf{k}\otimes\mathbf{k})e^{-i\mathbf{k}\cdot\mathbf{r}_{ij}}+\sum_{\mathbf{n}}\overleftrightarrow{\mathcal{E}}_{\mathrm{dd}}(\mathbf{r}_{ij\mathbf{n}})\right]\cdot\mathbf{p}_{j},
+E_{ij}=\frac{1}{4\pi\epsilon_{0}}\frac{1}{2}\mathbf{p}_{i}\cdot\left[\frac{4\pi}{V}\sum_{\mathbf{k}\neq\mathbf{0}}\frac{e^{-\sigma^{2}k^{2}/2}}{k^{2}}(\mathbf{k}\otimes\mathbf{k})e^{-i\mathbf{k}\cdot\mathbf{r}_{ij}}+\sideset{}{^{'}}\sum_{\mathbf{n}}\overleftrightarrow{\mathcal{E}}_{\mathrm{dd}}(\mathbf{r}_{ij\mathbf{n}})+\frac{2\delta_{ij}}{3\sigma^{3}}\sqrt{\frac{1}{2\pi}}\,I\right]\cdot\mathbf{p}_{j},
 \end{equation}
 
 \end_inset
@@ -1846,6 +1937,11 @@ noprefix "false"
 
 .
  Similar formulas hold for charge-charge and charge-dipole interactions.
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_body
