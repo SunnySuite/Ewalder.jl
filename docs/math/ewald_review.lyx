@@ -1719,7 +1719,7 @@ Recall that the Gaussian charge cloud self interactions
 \begin_layout Standard
 \begin_inset Formula 
 \begin{align*}
-E_{\mathrm{self}} & =\frac{1}{4\pi\epsilon_{0}}\frac{1}{2}\sum_{i,j}\delta_{ij}q_{i}q_{j}\frac{1}{r_{ij\mathbf{0}}}\mathrm{erf}\left(\frac{r_{ij\mathbf{0}}}{\sqrt{2}\,\sigma}\right),
+E_{\mathrm{self}} & =\frac{1}{4\pi\epsilon_{0}}\frac{1}{2}\sum_{i,j}\delta_{ij}q_{i}q_{j}\frac{1}{r_{ij}}\mathrm{erf}\left(\frac{r_{ij}}{\sqrt{2}\,\sigma}\right),
 \end{align*}
 
 \end_inset
@@ -1835,7 +1835,7 @@ status open
 \begin_layout Plain Layout
 \begin_inset Formula 
 \begin{equation}
-E_{\mathrm{self}}=\frac{1}{4\pi\epsilon_{0}}\left(\frac{1}{\sqrt{2\pi}\,\sigma}\sum_{i}q_{i}^{2}+\frac{1}{3}\frac{1}{\sqrt{2\pi}\,\sigma^{3}}\sum_{i}p_{i}^{2}\right).
+E_{\mathrm{self}}=\frac{1}{4\pi\epsilon_{0}}\left(\frac{1}{\sqrt{2\pi}\,\sigma}\sum_{i}q_{i}^{2}+\frac{1}{3\sqrt{2\pi}\,\sigma^{3}}\sum_{i}p_{i}^{2}\right).
 \end{equation}
 
 \end_inset
@@ -1903,7 +1903,7 @@ Consider, for simplicity, an ordered pair of dipoles
  The energy for this periodic, pairwise interaction is
 \begin_inset Formula 
 \begin{equation}
-E_{ij}=\frac{1}{4\pi\epsilon_{0}}\frac{1}{2}\mathbf{p}_{i}\cdot\left[\frac{4\pi}{V}\sum_{\mathbf{k}\neq\mathbf{0}}\frac{e^{-\sigma^{2}k^{2}/2}}{k^{2}}(\mathbf{k}\otimes\mathbf{k})e^{-i\mathbf{k}\cdot\mathbf{r}_{ij}}+\sideset{}{^{'}}\sum_{\mathbf{n}}\overleftrightarrow{\mathcal{E}}_{\mathrm{dd}}(\mathbf{r}_{ij\mathbf{n}})+\frac{2\delta_{ij}}{3\sigma^{3}}\sqrt{\frac{1}{2\pi}}\,I\right]\cdot\mathbf{p}_{j},
+E_{ij}=\frac{1}{4\pi\epsilon_{0}}\mathbf{p}_{i}\cdot\left[\frac{1}{2}\sideset{}{^{'}}\sum_{\mathbf{n}}\overleftrightarrow{\mathcal{E}}_{\mathrm{dd}}(\mathbf{r}_{ij\mathbf{n}})+\frac{4\pi}{2V}\sum_{\mathbf{k}\neq\mathbf{0}}\frac{e^{-\sigma^{2}k^{2}/2}}{k^{2}}(\mathbf{k}\otimes\mathbf{k})e^{-i\mathbf{k}\cdot\mathbf{r}_{ij}}+\frac{\delta_{ij}}{3\sqrt{2\pi}\,\sigma^{3}}\sqrt{\frac{1}{2\pi}}\,I\right]\cdot\mathbf{p}_{j},
 \end{equation}
 
 \end_inset
@@ -1927,7 +1927,12 @@ noprefix "false"
 \end_inset
 
 .
- A factor of two is required to account for contributions from both 
+ When 
+\begin_inset Formula $i\neq j$
+\end_inset
+
+, a factor of two should be applied to account for contributions from both
+ 
 \begin_inset Formula $E_{ij}$
 \end_inset
 

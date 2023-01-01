@@ -58,7 +58,7 @@ Ewald summation works by decomposing the Coulomb energy into two parts: (1) A
 real-space part, evaluated as a sum over point charges at short range, and (2) a
 Fourier space part, which captures the long-range interactions through a sum
 over $\mathbf k$-vectors, which label frequencies in the decomposition of total
-charge density. The `Ewalder.jl` implementation uses a straightforward algorithm
+charge density. The _Ewalder_ implementation uses a straightforward algorithm
 that scales as $N^{3/2}$ for increasing system sizes $N$ (assuming efficient
 calculation of the neighbor list). For very large scale simulations, it would be
 preferable to use instead a method that scales near-linearly with $N$, such as
@@ -68,7 +68,7 @@ preferable to use instead a method that scales near-linearly with $N$, such as
 
 The full Ewald method is summarized below. See our [mathematical
 writeup](https://raw.githubusercontent.com/SunnySuite/Ewalder.jl/main/docs/math/ewald_review.pdf)
-(PDF format) for the full derivation. 
+(PDF format) for the derivation. 
 
 The Ewald energy for a system of charges decomposes into three parts,
 
@@ -102,7 +102,7 @@ E_{\mathrm{self}}=\frac{1}{4\pi\epsilon_{0}}\frac{1}{\sqrt{2\pi}\,\sigma}\sum_{i
 ```
 which must be removed from the final energy output $E$.
 
-Both real- and Fourier- space sums are rapidly convergent. `Ewalder.jl` truncates these sums using the inequalities,
+Both real- and Fourier- space sums are rapidly convergent. _Ewalder_ truncates these sums using the inequalities,
 ```math
 r_{ij\mathbf{n}} \leq c_0 \sqrt{2} \sigma \\
 |\mathbf{k}_{\mathbf{m}}| \leq c_0 \sqrt{2} / \sigma
@@ -117,7 +117,7 @@ Apart from the small truncation error, the energy $E$ is mathematically independ
 
 where $c_1$ is a dimensionless parameter (defaulting to $c_1 = 2$) and $L = V^{1/3}$. This choice achieves, in principle, a total computational cost that scales as $O(N^{3/2})$, provided that the ion neighbor lists are calculated efficiently. For maximum efficiency, the user should provide a neighbor list. If one is not provided, this package will perform inefficient, brute-force calculation of the neighbor list.
 
-In addition to point charges, `Ewalder.jl` also allows specification of point dipoles, each of which generates an electrostatic potential that decays like $1/r^2$, and can similarly be handled using Ewald summation. The final formulas can be found in our [PDF note](https://raw.githubusercontent.com/SunnySuite/Ewalder.jl/main/docs/math/ewald_review.pdf).
+In addition to point charges, _Ewalder_ also allows specification of point dipoles, each of which generates an electrostatic potential that decays like $1/r^2$, and can similarly be handled using Ewald summation. The final formulas can be found in our [PDF note](https://raw.githubusercontent.com/SunnySuite/Ewalder.jl/main/docs/math/ewald_review.pdf).
 
 ## API
 

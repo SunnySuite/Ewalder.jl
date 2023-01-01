@@ -7,7 +7,7 @@ using TestItemRunner
     using LinearAlgebra
 
     # Madelung constants of ionic crystals:
-    # - Y. Sakamoto, The J. of Chem. Phys., vol. 28, (1958), p. 164
+    # * Y. Sakamoto, J. Chem. Phys., vol. 28, (1958), p. 164
     E_NaCl = -1.7475645946331822
     E_CsCl = -1.76267477307099
 

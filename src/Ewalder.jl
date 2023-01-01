@@ -1,7 +1,7 @@
 module Ewalder
 
 import StaticArrays: SVector, SMatrix, SA
-import LinearAlgebra: normalize, ⋅, ×, inv
+import LinearAlgebra: normalize, inv, ⋅, ×
 import SpecialFunctions: erfc
 
 const Vec3 = SVector{3,Float64}
@@ -66,7 +66,17 @@ end
 real_space_cutoff(sys::System)    = √2 * sys.c0 * sigma(sys)
 fourier_space_cutoff(sys::System) = √2 * sys.c0 / sigma(sys)
 
+# Number of cells in each direction to find all cells within a center-to-center
+# distance of rmax.
+function required_cell_displacement(latvecs, rmax)
+    recipvecs = eachrow(inv(reduce(hcat, latvecs)))
+    return map(latvecs, recipvecs) do a, b
+        round(Int, rmax / (a⋅normalize(b)) + 1e-6)
+    end
+end
 
+# Ensure that every position is within the parallelpiped unit cell defined by
+# sys.latvecs
 function wrap_positions!(sys::System; warn=false)
     # Lattice vectors as a 3x3 matrix
     A = reduce(hcat, sys.latvecs)
@@ -88,32 +98,26 @@ function wrap_positions!(sys::System; warn=false)
 end
 
 # Perform O(N^2) calculation of neighbor list.
-function get_neighbors(sys::System; rmax=0.0)
+function get_neighbors(sys::System)
     # Make sure positions are valid
     wrap_positions!(sys; warn=true)
 
-    # Real space cutoff
-    if iszero(rmax)
-        rmax = real_space_cutoff(sys)
-    end
+    # Target is to find all neighbors within distance rmax
+    rmax = real_space_cutoff(sys)
 
-    # Maximum latvec displacements, in each direction
-    as = sys.latvecs
-    bs = recipvecs(sys)
-    nmax = map(as, bs) do a, b
-        round(Int, rmax / (a⋅normalize(b)) + 1e-6) + 1
-    end
+    # Maximum latvec displacements in each direction. Shift by 1 to account for
+    # atoms that are at the edges of the cell.
+    nmax = required_cell_displacement(sys.latvecs, rmax) .+ 1
 
-    N = length(sys.pos)
-
-    ret = Neighbor[]
-    for i = 1:N, j = 1:N
-        for n1 = -nmax[1]:nmax[1], n2 = -nmax[2]:nmax[2], n3 = -nmax[3]:nmax[3]
-            n = (n1, n2, n3)
-            neigh = Neighbor(; i, j, n)
-            if distance2(sys, neigh) <= rmax*rmax
-                if i != j || !iszero(Vec3(n))
-                    push!(ret, neigh)
+    ret = Vector{Neighbor}[]
+    for i = eachindex(sys.pos)
+        push!(ret, Neighbor[])
+        for j = eachindex(sys.pos)
+            for n1 = -nmax[1]:nmax[1], n2 = -nmax[2]:nmax[2], n3 = -nmax[3]:nmax[3]
+                n = (n1, n2, n3)
+                neigh = Neighbor(; i, j, n)
+                if 0 < distance2(sys, neigh) <= rmax*rmax
+                    push!(ret[i], neigh)
                 end
             end
         end
@@ -127,9 +131,10 @@ end
 
 Calculate the Ewald energy in units of $1/4\pi\epsilon_0$ for a periodic system
 of `charges` and `dipoles`. If either charge or dipole parameters are omitted,
-they will be assumed zero.
+they will be assumed zero. A neighbors list can also be optionally provided; see
+the source code for details.
 """
-function energy(sys::System; neighbors=Neighbor[], charges=Float64[], dipoles=Vec3[])
+function energy(sys::System; neighbors=Vector{Neighbor}[], charges=Float64[], dipoles=Vec3[])
     N = length(sys.pos)
 
     # Find neighbors if not provided
@@ -146,16 +151,20 @@ function energy(sys::System; neighbors=Neighbor[], charges=Float64[], dipoles=Ve
     @assert abs(Q) < 1e-12
     charges .-= Q / N
 
+    # Precalculate constants
+    σ = sigma(sys)
+    σ² = σ*σ
+    σ³ = σ^3
+
     # Energy accumulator
     E = 0.0
 
     #####################################################
     ## Real space sum
-    σ = sigma(sys)
-    σ² = σ*σ
 
-    for neigh = neighbors
-        (; i, j) = neigh
+    for i = 1:N, neigh = neighbors[i]
+        @assert i == neigh.i
+        j = neigh.j
         
         qᵢ, pᵢ = (charges[i], dipoles[i])
         qⱼ, pⱼ = (charges[j], dipoles[j])
@@ -182,19 +191,15 @@ function energy(sys::System; neighbors=Neighbor[], charges=Float64[], dipoles=Ve
 
     #####################################################
     ## Fourier space sum
-    V = volume(sys)
-    as = sys.latvecs
-    bs = recipvecs(sys)
 
-    # Maximum recipvec displacements, in each direction
+    V = volume(sys)
+    recip = recipvecs(sys)
     kmax = fourier_space_cutoff(sys)
-    mmax = map(as, bs) do a, b
-        round(Int, kmax / (normalize(a)⋅b) + 1e-6) + 1
-    end
+    mmax = required_cell_displacement(recip, kmax)
     
     # Loop over grid of k points
     for m1 = -mmax[1]:mmax[1], m2 = -mmax[2]:mmax[2], m3 = -mmax[3]:mmax[3]
-        k = Vec3(m1, m2, m3)' * bs
+        k = Vec3(m1, m2, m3)' * recip
         k² = k⋅k
         if 0 < k² <= kmax*kmax
             ρk = 0.0im
@@ -205,12 +210,11 @@ function energy(sys::System; neighbors=Neighbor[], charges=Float64[], dipoles=Ve
         end
     end
 
-
     #####################################################
     ## Remove self energies
-    σ³ = σ^3
+
     for (q, p) = zip(charges, dipoles)
-        E += - q*q/(√(2π)*σ) - (p⋅p)/(√(2π)*(3σ³))
+        E += - (q*q)/(√(2π)*σ) - (p⋅p)/(3√(2π)*σ³)
     end
 
     return E
