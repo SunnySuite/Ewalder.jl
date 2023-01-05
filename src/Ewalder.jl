@@ -1,7 +1,7 @@
 module Ewalder
 
 import StaticArrays: SVector, SMatrix, SA
-import LinearAlgebra: normalize, inv, ⋅, ×
+import LinearAlgebra: norm, inv, ⋅, ×
 import SpecialFunctions: erfc
 
 const Vec3 = SVector{3,Float64}
@@ -69,9 +69,11 @@ fourier_space_cutoff(sys::System) = √2 * sys.c0 / sigma(sys)
 # Number of cells in each direction to find all cells within a center-to-center
 # distance of rmax.
 function required_cell_displacement(latvecs, rmax)
-    recipvecs = eachrow(inv(reduce(hcat, latvecs)))
-    return map(latvecs, recipvecs) do a, b
-        round(Int, rmax / (a⋅normalize(b)) + 1e-6)
+    invvecs = eachrow(inv(reduce(hcat, latvecs)))
+    return map(invvecs) do b
+        # For vectors a and b satisfying a⋅b=1, note that
+        # |b| = |b|/(a⋅b) = 1/(a⋅b̂)
+        round(Int, rmax * norm(b) + 1e-6)
     end
 end
 
