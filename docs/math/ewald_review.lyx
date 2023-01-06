@@ -192,7 +192,7 @@ to avoid a strong divergence in the sum over images
  If the net dipole moment,
 \begin_inset Formula 
 \begin{equation}
-\mathbf{P}=\sum_{i}\mathbf{r}_{i}q_{i},
+\mathbf{M}=\sum_{i}\mathbf{r}_{i}q_{i},\label{eq:net_dipole}
 \end{equation}
 
 \end_inset
@@ -600,7 +600,7 @@ The prime in
 \end_inset
 
  is a reminder that the divergent term involving 
-\begin_inset Formula $r_{ij\mathbf{n}}=0$
+\begin_inset Formula $r_{ij\mathbf{n}}=\mathbf{0}$
 \end_inset
 
  is excluded from the sum.
@@ -613,7 +613,7 @@ The prime in
 including
 \emph default
  the case where 
-\begin_inset Formula $r_{ij\mathbf{n}}=0$
+\begin_inset Formula $r_{ij\mathbf{n}}=\mathbf{0}$
 \end_inset
 
 .
@@ -781,7 +781,21 @@ define
 
 \end_inset
 
-subject to periodic boundary conditions.
+subject to periodic boundary conditions (for other alternatives, see Sec.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:surface"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
  The right-hand side is a convolution, 
 \begin_inset Formula 
 \begin{equation}
@@ -884,8 +898,8 @@ where
 \begin_inset Formula $\mathbf{k}=\mathbf{0}$
 \end_inset
 
- from the Fourier space sums, provided the reasonable assumption that 
-\begin_inset Formula $\hat{\phi}^{L}(\mathbf{0})=\sum_{i}\phi(\mathbf{r}_{i})$
+ from the Fourier space sums, given that 
+\begin_inset Formula $\hat{\phi}^{L}(\mathbf{0})=\sum_{i}\phi_{i}^{L}$
 \end_inset
 
  is finite.
@@ -1947,6 +1961,248 @@ noprefix "false"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Section
+Surface bound charge effects
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:surface"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Starting from a conditionally convergent sum, Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_pbc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, the Ewald method produced an absolutely convergent expression for energy
+ via Eqs.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_S_again"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+–
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_self_again"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ How did this happen? The mathematical trick was the introduction of a well-defi
+ned, long-range electrostatic potential 
+\begin_inset Formula $\phi^{L}(\mathbf{r})$
+\end_inset
+
+ in Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:poisson_phi_L"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ that is independent of net electric dipole.
+\end_layout
+
+\begin_layout Standard
+This Ewald regularization procedure can be interpreted as 
+\begin_inset Quotes eld
+\end_inset
+
+tin-foil
+\begin_inset Quotes erd
+\end_inset
+
+ (infinite dielectric) boundary conditions of the macroscale material sample.
+ To see this, consider a system with finite volume 
+\begin_inset Formula $V$
+\end_inset
+
+, nonzero net dipole moment 
+\begin_inset Formula $\mathbf{M}$
+\end_inset
+
+ as in Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:net_dipole"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, and periodic boundary conditions.
+ At the macroscale, this system effectively models a material with uniform
+ polarization density field 
+\begin_inset Formula $\mathbf{P}_{0}=\mathbf{M}/V$
+\end_inset
+
+.
+ Any real material sample has finite extent, allowing for a drop in the
+ polarization field 
+\begin_inset Formula $\mathbf{P}(\mathbf{r})$
+\end_inset
+
+ at the sample boundary.
+ Variation in the polarization density induces a bound charge density,
+\begin_inset Formula 
+\begin{equation}
+\rho_{b}(\mathbf{r})=-\nabla\cdot\mathbf{P}(\mathbf{r}),
+\end{equation}
+
+\end_inset
+
+which will contribute to the overall electrostatic energy.
+ In the special case that the material sample is surrounded by a metal (i.e.
+ a perfectly conducting material with infinite dielectric constant, 
+\begin_inset Formula $\kappa\rightarrow\infty$
+\end_inset
+
+) that is connected to ground, the bound charge can be perfectly screened.
+ In this scenario, the Ewald result gives the physically correct electrostatic
+ energy per unit 
+\begin_inset Formula $V$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Other macroscale boundary conditions are possible.
+ For example, suppose the sample is perfectly spherical and surrounded by
+ a background medium with relative permittivity 
+\begin_inset Formula $\kappa$
+\end_inset
+
+ that is 
+\emph on
+finite
+\emph default
+.
+ The induced surface surface bound charge will create an additional contribution
+ to the electrostatic energy
+\begin_inset Formula 
+\begin{equation}
+E_{\mathrm{surf}}=\frac{1}{2V\epsilon_{0}}\frac{|\mathbf{M}|^{2}}{(2\kappa+1)},
+\end{equation}
+
+\end_inset
+
+for each cell volume 
+\begin_inset Formula $V$
+\end_inset
+
+.
+ This surface energy should be added to the usual Ewald energy of Eq.
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:E_S_again"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ [S.
+ de Leeuw and J.
+ Perram, Physica A 
+\series bold
+107
+\series default
+, 179 (1981)].
+ In vacuum, 
+\begin_inset Formula $\kappa=1$
+\end_inset
+
+ and 
+\begin_inset Formula $E_{\mathrm{surf}}=|\mathbf{M}|^{2}/6V\epsilon_{0}.$
+\end_inset
+
+ For a general sample geometry 
+\begin_inset Formula $\Omega$
+\end_inset
+
+ that may not be spherical, the surface energy is
+\begin_inset Formula 
+\begin{equation}
+E_{\mathrm{surf}}=\frac{1}{4\pi\epsilon_{0}}\frac{1}{2V}\mathbf{M}\cdot\mathbf{J}\cdot\mathbf{M},
+\end{equation}
+
+\end_inset
+
+which involves the depolarization tensor
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\mathbf{J}=\int_{\Omega}d\mathbf{r}\nabla\nabla\frac{1}{|\mathbf{r}|}.
+\end{equation}
+
+\end_inset
+
+A derivation is provided in [V.
+ Ballenegger, J.
+ Chem.
+ Phys.
+ 
+\series bold
+140
+\series default
+, 161102 (2014), but the missing 
+\begin_inset Formula $1/V$
+\end_inset
+
+ factors there appear to be typos].
+ Computed values of 
+\begin_inset Formula $\mathbf{J}$
+\end_inset
+
+ for various geometries are known in the literature [J.
+ A.
+ Stratton, Electromagnetic Theory (IEEE Press, 2007)].
 \end_layout
 
 \end_body
