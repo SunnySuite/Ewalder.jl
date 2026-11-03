@@ -78,8 +78,9 @@ function required_cell_displacement(latvecs, rmax)
 end
 
 # Ensure that every position is within the parallelpiped unit cell defined by
-# sys.latvecs
-function wrap_positions!(sys::System; warn=false)
+# sys.latvecs. The tolerance absorbs round-off in the conversion to fractional
+# coordinates, which can map a position on the cell boundary to -ϵ.
+function wrap_positions!(sys::System; warn=false, tol=1e-12)
     # Lattice vectors as a 3x3 matrix
     A = reduce(hcat, sys.latvecs)
     invA = inv(A)
@@ -89,13 +90,13 @@ function wrap_positions!(sys::System; warn=false)
         v = invA * r
 
         # Optionally warn user
-        inrange(x) = 0 ≤ x ≤ 1
+        inrange(x) = -tol ≤ x ≤ 1 + tol
         if warn && !all(inrange, v)
             println("Warning: Ion at $r is outside unit cell. Its fractional coordinates are $v.")
         end
 
         # Wrap coordinates
-        sys.pos[i] = A * Vec3(mod(x, 1) for x = v)
+        sys.pos[i] = A * Vec3(mod(x + tol, 1) - tol for x = v)
     end
 end
 
